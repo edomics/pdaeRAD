@@ -1,7 +1,11 @@
+###Code to create STRUCTURE plots, calculate admixture proportions and to plot PCA results
+
 library(ggplot2)
 
 setwd("/path/to/directory")
 ###plots for multiple K values
+###STRUCTURE plots: Takes CLUMPP output files that have been reorganized so that assigned populations correspond between different K values. I.e. POP2 in K=3 is the same as POP2 in K=5
+
 k2=read.table("props.k2.both.out",header=FALSE)
 names(k2)=c("Index","IND","SITE","PopName","Prop")
 k2$SITE=factor(k2$SITE,c("KA","KB","QB","QA","QC","WC","DH","RG","SB","RK","MB","FD","TA","TB"))
