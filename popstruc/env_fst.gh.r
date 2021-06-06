@@ -1,3 +1,6 @@
+###Code to reproduce analyses looking at the role of environment and distance in driving population structure.
+###The approach follows that of Saenz-Agudelo 2015 (https://doi.org/10.1111/mec.13471) and uses the R code associated with the paper, modified for this dataset.
+
 #modified from https://www.analyticsvidhya.com/blog/2016/03/practical-guide-principal-component-analysis-python/
 #calculation of environmental distance using PCA approach
 env=read.table("env_var.txt",header=TRUE)
@@ -18,9 +21,9 @@ prop_varex
 #table of PC values for calc of Euclidean distance
 prin_comp$x
 
-#modified from Saenz-Agudelo 2015
+#modified from the R code associated with Saenz-Agudelo 2015
 library(dplyr)
-setwd("/Users/egs7/Documents/RAD2020/SUPPFIGS/MODEL/MODEL2020/")
+setwd("/path/to/directory/")
 bstdata=read.table("model_data.txt",header=TRUE)
 fst=read.table("SNP.distLD.bi.fst.comb",header=FALSE)
 names(fst)=c("site.comp","fst")
