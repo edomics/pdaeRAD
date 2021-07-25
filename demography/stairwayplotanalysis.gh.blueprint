@@ -1,0 +1,24 @@
+#example blueprint file
+#input setting
+popid: PGcoast # id of the population (no white space)
+nseq: 90 # number of sequences
+L: 859421 # total number of observed nucleic sites, including polymorphic and monomorphic - rerun angsd with no snp filtering to get this number
+whether_folded: true # whethr the SFS is folded (true or false)
+SFS: 	5173.835186 3108.981770 2265.203149 1791.571544 1467.192383 1266.223036 1028.183876 1021.219327 815.549603 675.121233 754.235875 601.269469 497.945317 555.327020 527.709805 448.064998 403.200406 480.863884 440.347721 359.213443 416.259911 399.984349 382.057404 362.344157 340.143099 293.180189 380.432622 247.225205 349.213054 296.752515 283.333357 261.724201 329.690316 312.993840 325.565633 316.100253 235.864751 347.102303 281.924972 259.552215 311.107343 225.270540 314.671521 315.701934 179.966939 # snp frequency spectrum: number of singleton, number of doubleton, etc. Matz GBR code says to remove first and last value (separated by white space)
+#smallest_size_of_SFS_bin_used_for_estimation: 2 # default is 1; to ignore singletons, change this number to 2
+#largest_size_of_SFS_bin_used_for_estimation: 44 # default is nseq/2 for folded SFS
+pct_training: 0.67 # percentage of sites for training
+nrand: 7	15	22	28 # number of random break points for each try (separated by white space)
+project_dir: PGcoast_g34_m483_sing_STRICT20 # project directory
+stairway_plot_dir: stairway_plot_es # directory to the stairway plot files
+ninput: 200 # number of input files to be created for each estimation
+#output setting
+mu: 4.83e-8 # assumed mutation rate per site per generation
+year_per_generation: 34 # assumed generation time (in years)
+#plot setting
+plot_title: PGcoast_fold.g34_sing.483_strict20 # title of the plot
+xrange: 0.1,10000 # Time (1k year) range; format: xmin,xmax; "0,0" for default
+yrange: 0,0 # Ne (1k individual) range; format: xmin,xmax; "0,0" for default
+xspacing: 2 # X axis spacing
+yspacing: 2 # Y axis spacing
+fontsize: 12 # Font size
