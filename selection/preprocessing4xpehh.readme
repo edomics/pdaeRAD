@@ -1,0 +1,90 @@
+#These commands were used to reformat and process the data for analysis of EHH and XPEHH.
+#In short, they phase the vcf, polarise to PAG major allele, and filter for only SNPs on scaffolds >300kb with at least 20 SNPs.
+#Start with SNP.msp.recode.vcf
+#Reformat missing genotypes coded as . to ./.
+cat SNP.msp.recode.vcf | sed -E 's/\t.:/\t.\/.:/g' > SNP.msp.recode.missrfmt.vcf
+Run Beagle 4.1
+java -jar ../software/my_analysis/share/beagle-4.1_21Jan17.6cc.jar-0/beagle.jar gt=./SNP.msp.recode.missrfmt.vcf out=./SNP.msp.recode.phased.vcf nthreads=4 ne=10000
+
+#create snp id column based on scaffold name and position
+zcat SNP.msp.recode.phased.vcf.vcf.gz | grep -v "#" | sed -E 's/(scaffold[0-9]+)(\|size[0-9]+\t)([0-9]+)\t./\1\2\t\3\t\1_\3/' > SNP.msp.recode.phased.nohead.id.vcf
+zcat SNP.msp.recode.phased.vcf.vcf.gz | grep "#" | cat - SNP.msp.recode.phased.nohead.id.vcf > SNP.msp.recode.phased.head.id.vcf
+
+#Remove header - convert long format scaffold name to number, then replace header
+cat SNP.msp.recode.phased.head.id.vcf | grep -v "#" | sed -E 's/^scaffold([0-9]+)\|size[0-9]+\t/\1/' > SNP.msp.recode.phased.head.id.chr.vcf
+zcat SNP.msp.recode.phased.vcf.vcf.gz | grep "#" | cat - SNP.msp.recode.phased.head.id.chr.vcf > SNP.msp.recode.phased.head2.id.chr.vcf
+
+#Selscan needs biallelic snps and will not filter for this so use vcftools to filter for biallelic snps & create corresponding map
+#Could also be done by: vcftools --vcf SNP.msp.recode.phased.head2.id.chr.vcf --min-alleles 2 --max-alleles 2 --out SNP.msp.recode.phased.head.id.chr.bi (give same number of snps)
+cat SNP.msp.recode.phased.head2.id.chr.vcf | grep -v "," > SNP.msp.recode.phased.head2.id.chr.bi.comma.vcf
+cat SNP.msp.recode.phased.head2.id.chr.bi.comma.vcf | grep -v "#" | awk '{print $1"\t"$3"\t"$2"\t"$2}' > SNP.msp.recode.phased.bi.map
+
+##############
+
+#Calculate allele frequencies for INS and OUT samples
+vcftools --vcf SNP.msp.recode.phased.head2.id.chr.bi.comma.vcf --keep OUT.inds --freq --out OUT
+vcftools --vcf SNP.msp.recode.phased.head2.id.chr.bi.comma.vcf --keep INS.inds --freq --out INS
+
+
+
+#Identify the dominant allele in the OUT population. To do this, take the frq output, change : character to tab as allele+freq are in the form a:f. 
+#If statement: if frequency of 1st allele is >= freq of 2nd allele, print out 'chr pos 1st_allele' else print 'chr pos 2nd_allele'. Save to file for dominant OUT allele.
+cat OUT.frq | sed -E 's/:/\t/g' | while read line ; do awk '{
+if ($6 >= $8)
+print $1,$2,$5
+else
+print $1,$2,$7
+}'; done > OUT.dom.allele
+
+#print snpid next to OUT dom allele info
+cat SNP.msp.recode.phased.head2.id.chr.bi.comma.vcf | grep -v "#" |  awk '{print $3}' | paste - OUT.dom.allele > OUT.dom.allele.newref
+
+#create headerless version of the vcf
+grep -v "#" SNP.msp.recode.phased.head2.id.chr.bi.comma.vcf > SNP.msp.recode.phased.head2.id.chr.bi.comma.nohead.vcf
+
+#Change space to tab in OUT dom file, paste with headerless vcf. If dom allele is ref allele in vcf, print out vcf line as is (57925/70349)
+sed -E 's/\ /\t/g' OUT.dom.allele.newref | paste - SNP.msp.recode.phased.head2.id.chr.bi.comma.nohead.vcf | while IFS=$'\t' read idd chrd posd dom chr pos id ref alt other; do if [ $dom == $ref ]; then echo -e $chr"\t"$pos"\t"$id"\t"$ref"\t"$alt"\t"$other; fi; done > SNP.dom.match.vcf
+ 
+#Change space to tab in OUT dom file, paste with headerless vcf. If dom allele is not ref allele in vcf, print out vcf line with ref and alt alleles switched in info (12424/70349)
+sed -E 's/\ /\t/g' OUT.dom.allele.newref | paste - SNP.msp.recode.phased.head2.id.chr.bi.comma.nohead.vcf | while IFS=$'\t' read idd chrd posd dom chr pos id ref alt other; do if [ $dom != $ref ]; then echo -e $chr"\t"$pos"\t"$id"\t"$alt"\t"$ref"\t"$other; fi; done > SNP.dom.mismatch.vcf
+
+
+#Recode genotypes to reflect changed reference allele. Switch genotypes using / instead | to avoid genotypes that have alread been changed. I.e. 0|0 becomes 1/1, 0|1 becomes 1/0, 1|0 becomes 0/1, 1|1 becomes 0/0 - then change / back to | to keep phase. 
+cat SNP.dom.mismatch.vcf | sed -E 's/0\|0/1\/1/g' | sed -E 's/0\|1/1\/0/g' | sed -E 's/1\|0/0\/1/g' | sed -E 's/1\|1/0\/0/g' | sed 's/\//\|/g' > SNP.dom.mismatch.final.vcf
+
+#Sort vcf and add header
+grep "#" SNP.msp.recode.phased.head2.id.chr.bi.comma.vcf > vcf.phased.header
+cat SNP.dom.match.vcf SNP.dom.mismatch.final.vcf | sort -n -k1,1 -k2,2 | cat vcf.phased.header - > SNP.dom.phased.vcf
+
+
+#############
+
+#create vcf for each pop
+vcftools --vcf SNP.dom.phased.vcf --keep INS.inds --recode --recode-INFO-all --out SNP.dom.phased.INS
+vcftools --vcf SNP.dom.phased.vcf --keep OUT.inds --recode --recode-INFO-all --out SNP.dom.phased.OUT
+
+#make folder for filtered scafs
+mkdir X20SNPS
+
+#count n.snps per scaffold, keep those with 20+ SNPs, then filter out scaffolds shorter than 300kb, create list of scaffolds passing filter
+cat SNP.dom.phased.INS.recode.vcf | awk '{print $1}' | uniq -c | sort -n -k1,1 | awk '$1 > 19' | awk '{print $2}' | sort -n | awk '$1 < 789' | sed -E 's/^([0-9]+)/scaffold\1_/' > x20snps.300k.scafs
+
+cp x20snps.300k.scafs ./X20SNPS/
+cp ./TEST/selscanner.sh ./X20SNPS/
+cd X20SNPS/
+nano selscanner.sh 
+./selscanner.sh 
+
+files=$(cat x20snps.300k.scafs | sed -E 's/_/_ins.ihs.out/' | tr '\r\n' ' ' )
+norm --ihs --files (echo $files)
+
+
+cat ../*.xpehh.out.norm > xpehh.all
+
+grep -v "pos" xpehh.all | awk '{print $1,sqrt($9^2)}' | sort -g -k2,2 | wc -l ### calc number of SNPs in 'long' scaffolds 52536. Top 1% will be the 525 SNPs with the highest absolute XPEHH.
+grep -v "pos" xpehh.all | awk '{print $1,sqrt($9^2)}' | sort -g -k2,2 | tail -525 | awk '{print $1}' > top.1pc.nxpehh.ids
+#As top 1% is determined based on absolute XP-EHH, refine list to those that are outliers in PAG population only.
+grep -f top.1pc.nxpehh.ids xpehh.all | awk '$9 > 0' > top.1pc.nxpehh.pag.outliers
+
+
+
