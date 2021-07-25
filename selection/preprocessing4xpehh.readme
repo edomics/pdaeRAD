@@ -3,7 +3,7 @@
 #Start with SNP.msp.recode.vcf
 #Reformat missing genotypes coded as . to ./.
 cat SNP.msp.recode.vcf | sed -E 's/\t.:/\t.\/.:/g' > SNP.msp.recode.missrfmt.vcf
-Run Beagle 4.1
+#Run Beagle 4.1
 java -jar ../software/my_analysis/share/beagle-4.1_21Jan17.6cc.jar-0/beagle.jar gt=./SNP.msp.recode.missrfmt.vcf out=./SNP.msp.recode.phased.vcf nthreads=4 ne=10000
 
 #create snp id column based on scaffold name and position
