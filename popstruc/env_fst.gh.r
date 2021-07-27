@@ -1,34 +1,16 @@
 ###Code to reproduce analyses looking at the role of environment and distance in driving population structure.
 ###The approach follows that of Saenz-Agudelo 2015 (https://doi.org/10.1111/mec.13471) and uses the R code associated with the paper, modified for this dataset.
 
-#modified from https://www.analyticsvidhya.com/blog/2016/03/practical-guide-principal-component-analysis-python/
-#calculation of environmental distance using PCA approach
-env=read.table("env_var.txt",header=TRUE)
-#use prcomp() to calc pca. By default, mean centred on - and scale=TRUE normalise to stdev = 1
-prin_comp <- prcomp(env,scale.=TRUE)
-#rotation give PC loadings
-prin_comp$rotation
-#plot with loadings
-biplot(prin_comp, scale = 0)
-#compute std_dev of each PC
-std_dev <- prin_comp$sdev
-#calc variance
-pr_var <- std_dev^2
-pr_var
-#proportion of variance explained by each PC
-prop_varex <- pr_var/sum(pr_var)
-prop_varex
-#table of PC values for calc of Euclidean distance
-prin_comp$x
-
-#modified from the R code associated with Saenz-Agudelo 2015
 library(dplyr)
 setwd("/path/to/directory/")
+#model data contains pairwise geographic and environmental distance (euclidian distance between pc1 & pc2 of environmental variables - min sal, max sal, min temp, max temp)
 bstdata=read.table("model_data.txt",header=TRUE)
+#pairwise fsts calculated in vcftools
 fst=read.table("SNP.distLD.bi.fst.comb",header=FALSE)
 names(fst)=c("site.comp","fst")
 bstdata.fst=left_join(bstdata,fst, by = c("site"="site.comp"))
 
+#define models
 m1=lm(scale(fst)~scale(geod),data=bstdata.fst)
 m2=lm(scale(fst)~scale(geod)+scale(envd),data=bstdata.fst)
 m3=lm(scale(fst)~scale(geod)+scale(envd)+factor(barrier),data=bstdata.fst)
