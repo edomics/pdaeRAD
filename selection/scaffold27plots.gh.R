@@ -146,12 +146,13 @@ plot.xpehh=ggplot(don, aes(x=BPcum, y=normxpehh)) +
   xlab("Scaffold") + ylab("Normalised XPEHH")
 
 
-#Venn diagram
-
-library(eulerr)
-fit=euler(c("FST"=1070,"PI"=215,"XPEHH"=244,"FST&PI"=60,"FST&XPEHH"=150,"PI&XPEHH"=9,"FST&PI&XPEHH"=33))
-plot(fit)
-
+#Upset plot
+library(UpSetR)
+fst.out=read.table("snp.id.fst.outliers")
+pi.out=read.table("snp.id.pi.outliers")
+xpehh.out=read.table("snp.id.xpehh.outliers")
+outlist=list(fst=fst.out$V1,pi=pi.out$V1,xpehh=xpehh.out$V1)
+upset(fromList(outlist), order.by = "freq",mainbar.y.label = "Outlier Intersections", sets.x.label = "Outlier SNPs per Test", text.scale = c(1.3, 1.3, 1, 1, 2, 0.75))
 
 
 
