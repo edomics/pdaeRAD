@@ -2,6 +2,7 @@
 ###The approach follows that of Saenz-Agudelo 2015 (https://doi.org/10.1111/mec.13471) and uses the R code associated with the paper, modified for this dataset.
 
 library(dplyr)
+library(gridExtra)
 setwd("/path/to/directory/")
 #model data contains pairwise geographic and environmental distance (euclidian distance between pc1 & pc2 of environmental variables - min sal, max sal, min temp, max temp)
 bstdata=read.table("model_data.txt",header=TRUE)
@@ -124,7 +125,17 @@ MMRR (Y,X,nperm=9999)
 
 #Plotting figures for entire dataset
 #with CIs
-ggplot(bstdata.fst,aes(y=scale(fst),x=scale(envd)+scale(geod),colour=factor(barrier))) + geom_point() +scale_color_manual(values=c("orange","blue"))+stat_smooth(data=bstdata,method="lm",se=T)+theme_bw()+guides(color=F) +ylab("Genetic Distance")+xlab("Geo + Env Distance")+theme(axis.text = element_text(size=14), axis.title = element_text(size=20))
+ggplot(bstdata.fst,aes(y=scale(fst),x=scale(envd)+scale(geod),colour=factor(barrier))) + geom_point() +scale_color_manual(values=c("orange","blue"))+stat_smooth(data=bstdata.fst,method="lm",se=T)+theme_bw()+guides(color=F) +ylab("Genetic Distance")+xlab("Geo + Env Distance")+theme(axis.text = element_text(size=14), axis.title = element_text(size=20))
 #without CIs
-ggplot(bstdata.fst,aes(y=scale(fst),x=scale(envd)+scale(geod),colour=factor(barrier))) + geom_point() +scale_color_manual(values=c("orange","blue"))+stat_smooth(data=bstdata,method="lm",se=F)+theme_bw()+guides(color=F) +ylab("Genetic Distance")+xlab("Geo + Env Distance")+theme(axis.text = element_text(size=14), axis.title = element_text(size=20))
+ggplot(bstdata.fst,aes(y=scale(fst),x=scale(envd)+scale(geod),colour=factor(barrier))) + geom_point() +scale_color_manual(values=c("orange","blue"))+stat_smooth(data=bstdata.fst,method="lm",se=F)+theme_bw()+guides(color=F) +ylab("Genetic Distance")+xlab("Geo + Env Distance")+theme(axis.text = element_text(size=14), axis.title = element_text(size=20))
+
+#final plots including for env/geo/bar only
+a=ggplot(bstdata.fst,aes(y=scale(fst),x=scale(barrier))) + geom_point() +stat_smooth(data=bstdata.fst,method="lm",se=T)+theme_bw()+guides(color=F) +ylab("Genetic Distance")+xlab("Barrier")+theme(axis.text = element_text(size=14), axis.title = element_text(size=20)) + ylim(c(-2.1,2.25))
+b=ggplot(bstdata.fst,aes(y=scale(fst),x=scale(geod))) + geom_point() +stat_smooth(data=bstdata.fst,method="lm",se=T)+theme_bw()+guides(color=F) +ylab("Genetic Distance")+xlab("Geo Distance")+theme(axis.text = element_text(size=14), axis.title = element_text(size=20)) + ylim(c(-2.1,2.25))
+c=ggplot(bstdata.fst,aes(y=scale(fst),x=scale(envd))) + geom_point() +stat_smooth(data=bstdata.fst,method="lm",se=T)+theme_bw()+guides(color=F) +ylab("Genetic Distance")+xlab("Env Distance")+theme(axis.text = element_text(size=14), axis.title = element_text(size=20)) + ylim(c(-2.1,2.25))
+d=ggplot(bstdata.fst,aes(y=scale(fst),x=scale(envd)+scale(geod),colour=factor(barrier))) + geom_point() +scale_color_manual(values=c("orange","blue"))+stat_smooth(data=bstdata.fst,method="lm",se=T)+theme_bw()+guides(color=F) +ylab("Genetic Distance")+xlab("Geo + Env Distance")+theme(axis.text = element_text(size=14), axis.title = element_text(size=20)) + ylim(c(-2.1,2.25))
+
+grid.arrange(arrangeGrob(a,b,c,d, nrow=1, ncol=4))
+
+
 
