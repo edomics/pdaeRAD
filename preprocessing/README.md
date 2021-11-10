@@ -1,4 +1,4 @@
-Initial processing steps
+# Initial processing steps #
 
 Most of these processes are incorporated into loops over all samples.
 
