@@ -42,9 +42,6 @@ Use freebayes to call genotypes
 freebayes command
 ```
 
-Filter freebayes vcf based on RAD focused filters according to dDocent pipeline. See XXX for discussion of individual filters.
-```
-freebayes filters
-```
+Filter freebayes vcf based on RAD focused filters according to dDocent pipeline. See http://www.ddocent.com/filtering/ for filtering approach and discussion of individual filters.
 
 
