@@ -5,7 +5,7 @@
   
   treemix.analyses.gh.R - Rcode to analyse and plot treemix outputs 
   
-  treemix.iterator.singlebatch.gh.sh - Shell script to ru
+  treemix.iterator.singlebatch.gh.sh - Shell script to run treemix analyses
   
   three.raw.poplab - Raw output from three pop analyses
   
