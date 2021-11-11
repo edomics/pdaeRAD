@@ -39,7 +39,7 @@ samtools sort -@ 7 - > ./BST_ALIGN/Q30RG/$ind.RG.q30.sort.bam
 
 Use freebayes to call genotypes
 ```
-freebayes command
+freebayes -f pdae_genome.v1.fa --bam-list BST.bam.list.fullpath > BST.Q30.vcf
 ```
 
 Filter freebayes vcf based on RAD focused filters according to dDocent pipeline. See http://www.ddocent.com/filtering/ for filtering approach and discussion of individual filters.
