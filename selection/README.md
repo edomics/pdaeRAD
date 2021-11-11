@@ -17,7 +17,7 @@
   
   scaffold27plots.gh.R - Rcode to recreate Scaffold 27 plots
   
-  selscanner.gh.sh - Shell script to run selscanner
+  selscanner.gh.sh - Shell script to run selscan
   
   stacks.populations.readme.md - Extended description of Stacks populations analyses and bootstrapping
   
